@@ -4410,3 +4410,25 @@ msgid "You will lose your remaining day."
 msgid_plural "You will lose your remaining %d days."
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "Pause VPN"
+msgstr ""
+
+msgid "Reconnects at %s"
+msgstr ""
+
+msgid "Reconnects in %s"
+msgstr ""
+
+msgid "Your traffic is not protected while the VPN is paused. It reconnects automatically when the time is up."
+msgstr ""
+
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
