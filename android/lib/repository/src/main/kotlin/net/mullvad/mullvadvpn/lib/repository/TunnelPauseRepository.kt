@@ -53,6 +53,7 @@ class TunnelPauseRepository(
     // Disconnects the tunnel and suspends until the pause is over. The tunnel is reconnected if
     // the timer runs out, but not if the pause ends in any other way.
     suspend fun pause(duration: Duration): PauseResult {
+        val initialConnectionRequests = connectionProxy.connectionRequests.value
         val resumeAt = clock.instant().plus(duration.toJavaDuration())
         // Must be set before disconnecting, so that the service stays in the foreground when the
         // system unbinds from it.
@@ -63,7 +64,14 @@ class TunnelPauseRepository(
                 return PauseResult.DisconnectFailed(it)
             }
 
-            val result = merge(timerExpired(duration), tunnelStarted(), loggedOut()).first()
+            val result =
+                merge(
+                        timerExpired(duration),
+                        connectionRequested(initialConnectionRequests),
+                        tunnelStarted(),
+                        loggedOut(),
+                    )
+                    .first()
             Logger.i("Pause ended: $result")
 
             return if (result == PauseResult.Resumed) {
@@ -82,6 +90,14 @@ class TunnelPauseRepository(
         timer.await(duration)
         emit(PauseResult.Resumed)
     }
+
+    // Capture the counter before disconnecting so requests during the disconnect RPC are retained.
+    // A connect request can take the daemon directly from Disconnecting to Connecting.
+    private fun connectionRequested(initialConnectionRequests: Long) =
+        connectionProxy.connectionRequests
+            .filter { it != initialConnectionRequests }
+            .take(1)
+            .map { PauseResult.ResumedByUser }
 
     // The user (or the system, e.g. always-on VPN) started the tunnel while it was paused. Wait for
     // the disconnect to go through first, so the state from before the pause is not mistaken for

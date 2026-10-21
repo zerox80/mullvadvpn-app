@@ -18,10 +18,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import net.mullvad.mullvadvpn.lib.model.AccountNumber
+import net.mullvad.mullvadvpn.lib.model.ActionAfterDisconnect
 import net.mullvad.mullvadvpn.lib.model.ConnectError
 import net.mullvad.mullvadvpn.lib.model.DeviceState
 import net.mullvad.mullvadvpn.lib.model.DisconnectReason
@@ -38,6 +40,7 @@ class TunnelPauseRepositoryTest {
     private val mockConnectionProxy: ConnectionProxy = mockk()
     private val mockDeviceRepository: DeviceRepository = mockk()
 
+    private val connectionRequests = MutableStateFlow(0L)
     private val tunnelState =
         MutableStateFlow<TunnelState>(
             TunnelState.Connected(
@@ -61,6 +64,7 @@ class TunnelPauseRepositoryTest {
 
     @BeforeEach
     fun setUp() {
+        every { mockConnectionProxy.connectionRequests } returns connectionRequests
         every { mockConnectionProxy.tunnelState } returns tunnelState
         every { mockDeviceRepository.deviceState } returns deviceState
         coEvery { mockConnectionProxy.disconnect(DisconnectReason.USER_INITIATED_PAUSE) } answers
@@ -126,6 +130,68 @@ class TunnelPauseRepositoryTest {
         assertEquals(PauseResult.ResumedByUser, result.await())
         assertNull(tunnelPauseRepository.pausedUntil.value)
         coVerify(exactly = 0) { mockConnectionProxy.connectWithoutPermissionCheck() }
+    }
+
+    @Test
+    fun `connecting before teardown completes should cancel the pause timer`() = runTest {
+        // Arrange
+        coEvery { mockConnectionProxy.disconnect(DisconnectReason.USER_INITIATED_PAUSE) } answers
+            {
+                tunnelState.value = TunnelState.Disconnecting(ActionAfterDisconnect.Nothing)
+                true.right()
+            }
+        val result = async { tunnelPauseRepository.pause(PAUSE_DURATION) }
+        runCurrent()
+
+        // Act: a notification or tile can connect without passing through Disconnected.
+        connectionRequests.value += 1
+        tunnelState.value =
+            TunnelState.Connecting(
+                endpoint = null,
+                location = null,
+                featureIndicators = emptyList(),
+            )
+
+        // Assert: a later manual disconnect must not be undone by the original timer.
+        assertEquals(PauseResult.ResumedByUser, result.await())
+        assertNull(tunnelPauseRepository.pausedUntil.value)
+        tunnelState.value = TunnelState.Disconnected()
+        advanceTimeBy(PAUSE_DURATION)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { mockConnectionProxy.connectWithoutPermissionCheck() }
+    }
+
+    @Test
+    fun `connection requested during the disconnect RPC should end the pause`() = runTest {
+        // Arrange
+        coEvery { mockConnectionProxy.disconnect(DisconnectReason.USER_INITIATED_PAUSE) } answers
+            {
+                connectionRequests.value += 1
+                true.right()
+            }
+
+        // Act
+        val result = tunnelPauseRepository.pause(PAUSE_DURATION)
+
+        // Assert
+        assertEquals(PauseResult.ResumedByUser, result)
+        assertEquals(0L, currentTime)
+        assertNull(tunnelPauseRepository.pausedUntil.value)
+        coVerify(exactly = 0) { mockConnectionProxy.connectWithoutPermissionCheck() }
+    }
+
+    @Test
+    fun `connection requested before the pause should not end it`() = runTest {
+        // Arrange
+        connectionRequests.value += 1
+
+        // Act
+        val result = tunnelPauseRepository.pause(PAUSE_DURATION)
+
+        // Assert
+        assertEquals(PauseResult.Resumed, result)
+        assertEquals(PAUSE_DURATION.inWholeMilliseconds, currentTime)
+        coVerify(exactly = 1) { mockConnectionProxy.connectWithoutPermissionCheck() }
     }
 
     @Test
