@@ -1,0 +1,119 @@
+---
+name: Android - Publish fork APK
+on:
+  push:
+    branches: [fork-apk-release]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to build
+        type: string
+        required: true
+        default: android-pause-vpn
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.ref || 'android-pause-vpn' }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-release:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: write
+    env:
+      SOURCE_REF: ${{ inputs.ref || 'android-pause-vpn' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          persist-credentials: false
+
+      - name: Build unsigned apk
+        env:
+          GRADLE_OPTS: >
+            -Dorg.gradle.jvmargs=-Xmx4096M
+            -Dkotlin.daemon.jvm.options="-Xmx4096M"
+            -Dkotlin.compiler.execution.strategy=in-process
+        run: ./building/containerized-build.sh android assembleOssProdRelease
+
+      - name: Sign apk
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.APK_SIGNING_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.APK_SIGNING_KEYSTORE_PASSWORD }}
+        run: |
+          build_tools="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          unsigned=android/app/build/outputs/apk/ossProd/release/app-oss-prod-release-unsigned.apk
+          keystore="$RUNNER_TEMP/signing.p12"
+
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+            echo "stable_key=true" >> "$GITHUB_OUTPUT"
+          else
+            # Without the signing secrets the apk is signed with a key that only exists in this run.
+            KEYSTORE_PASSWORD="$(openssl rand -hex 32)"
+            export KEYSTORE_PASSWORD
+            echo "::add-mask::$KEYSTORE_PASSWORD"
+            keytool -genkeypair -noprompt -storetype PKCS12 -keystore "$keystore" \
+              -storepass "$KEYSTORE_PASSWORD" -alias fork -keyalg RSA -keysize 4096 \
+              -validity 10000 -dname "CN=Mullvad VPN fork build"
+            echo "stable_key=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          version_name="$("$build_tools/aapt2" dump badging "$unsigned" \
+            | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")"
+          test -n "$version_name"
+          apk="$RUNNER_TEMP/MullvadVPN-$version_name.apk"
+          "$build_tools/zipalign" -f -P 16 4 "$unsigned" "$RUNNER_TEMP/aligned.apk"
+          "$build_tools/apksigner" sign --ks "$keystore" --ks-pass env:KEYSTORE_PASSWORD \
+            --out "$apk" "$RUNNER_TEMP/aligned.apk"
+          rm "$keystore"
+
+          cert_sha256="$("$build_tools/apksigner" verify --print-certs "$apk" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+          {
+            echo "apk=$apk"
+            echo "version_name=$version_name"
+            echo "apk_sha256=$(sha256sum "$apk" | cut -d ' ' -f 1)"
+            echo "cert_sha256=$cert_sha256"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK: ${{ steps.sign.outputs.apk }}
+          VERSION_NAME: ${{ steps.sign.outputs.version_name }}
+          APK_SHA256: ${{ steps.sign.outputs.apk_sha256 }}
+          CERT_SHA256: ${{ steps.sign.outputs.cert_sha256 }}
+          STABLE_KEY: ${{ steps.sign.outputs.stable_key }}
+        run: |
+          commit="$(git rev-parse HEAD)"
+          tag="apk-${commit:0:10}"
+          notes="$RUNNER_TEMP/notes.md"
+          {
+            echo "Build of \`$SOURCE_REF\` at $commit. This is not an official Mullvad release."
+            echo
+            echo "The app has the same package name as the official Mullvad VPN app, so that one has" \
+              "to be uninstalled first."
+            if [ "$STABLE_KEY" != true ]; then
+              echo
+              echo "Signed with a key that was generated for this build only. A later build can only" \
+                "be installed after uninstalling this one."
+            fi
+            echo
+            echo "APK SHA-256: \`$APK_SHA256\`"
+            echo "Signing certificate SHA-256: \`$CERT_SHA256\`"
+          } > "$notes"
+
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$tag" "$APK" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --notes-file "$notes"
+          else
+            gh release create "$tag" "$APK" --repo "$GITHUB_REPOSITORY" --target "$commit" \
+              --prerelease --title "Mullvad VPN $VERSION_NAME ($SOURCE_REF)" --notes-file "$notes"
+          fi
