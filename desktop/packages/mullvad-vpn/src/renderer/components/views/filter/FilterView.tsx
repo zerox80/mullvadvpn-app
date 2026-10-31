@@ -8,9 +8,15 @@ import { AppNavigationHeader } from '../../app-navigation-header';
 import { BackAction } from '../../keyboard-navigation';
 import { NavigationContainer } from '../../NavigationContainer';
 import { NavigationScrollbars } from '../../NavigationScrollbars';
-import { OwnershipFilter, ProviderFilter } from './components';
+import {
+  AutomaticLocationOverridesFiltersInfo,
+  OwnershipFilter,
+  ProviderFilter,
+  SettingsFilterChips,
+} from './components';
 import { FilterViewContextProvider, useFilterViewContext } from './FilterViewContext';
-import { useHandleApplyFilter } from './hooks';
+import { useHandleApplyFilter, useShowAutomaticLocationOverridesFiltersInfo } from './hooks';
+import { useShowSettingsFilterChips } from './hooks/use-show-settings-filter-chips';
 
 const StyledViewContent = styled(View.Content)`
   margin-bottom: 0;
@@ -24,6 +30,9 @@ function FilterViewImpl() {
   const noSelectedProviders = availableProviders.every(
     (provider) => !selectedProviders.includes(provider),
   );
+
+  const showAutomaticLocationOverridesFiltersInfo = useShowAutomaticLocationOverridesFiltersInfo();
+  const showSettingsFilterChips = useShowSettingsFilterChips();
 
   return (
     <View backgroundColor="darkBlue">
@@ -44,6 +53,10 @@ function FilterViewImpl() {
             />
             <NavigationScrollbars>
               <View.Container horizontalMargin="medium" flexDirection="column" gap="small">
+                {showSettingsFilterChips && <SettingsFilterChips />}
+                {showAutomaticLocationOverridesFiltersInfo && (
+                  <AutomaticLocationOverridesFiltersInfo />
+                )}
                 <OwnershipFilter defaultOpen />
                 <ProviderFilter defaultOpen />
               </View.Container>

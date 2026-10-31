@@ -2,14 +2,16 @@ import { motion } from 'motion/react';
 import styled from 'styled-components';
 
 import { messages } from '../../../../../../shared/gettext';
+import {
+  DaitaFilterChip,
+  LwoFilterChip,
+  QuicFilterChip,
+} from '../../../../../features/locations/components';
 import { useActiveFilters } from '../../../../../features/locations/hooks/use-active-filters';
 import { durationTokens, spacings } from '../../../../../lib/foundations';
 import { useSelectLocationViewContext } from '../../SelectLocationViewContext';
-import { DaitaFilterChip } from '../daita-filter-chip';
-import { LwoFilterChip } from '../lwo-filter-chip';
 import { OwnershipFilterChip } from '../ownership-filter-chip';
 import { ProvidersFilterChip } from '../providers-filter-chip';
-import { QuicFilterChip } from '../quic-filter-chip';
 
 export const StyledFilterChips = styled(motion.ul)`
   display: flex;
@@ -41,8 +43,8 @@ export function FilterChips() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{
-        opacity: { duration: durationTokens.fast, ease: 'easeOut' },
-        layout: { duration: durationTokens.fast, ease: 'easeOut' },
+        duration: durationTokens.fast,
+        ease: 'easeOut',
       }}>
       {isOwnershipFilterActive && (
         <li>

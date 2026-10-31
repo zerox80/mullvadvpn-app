@@ -45,7 +45,7 @@ class ConnectivityTests: LoggedOutUITestCase {
         // Setup. Enter blocked state by connecting to relay and applying filter which relay isn't part of.
         login(accountNumber: hasTimeAccountNumber)
 
-        disableBridgesAccessMethod()
+        disableAccessMethods([.accessMethodBridgesCell, .accessMethodEncryptedDNSCell, .accessMethodDomainFrontingCell])
 
         TunnelControlPage(app)
             .tapSelectLocationButton()
@@ -106,38 +106,7 @@ class ConnectivityTests: LoggedOutUITestCase {
 
         TunnelControlPage(app)
 
-        HeaderBar(app)
-            .tapSettingsButton()
-
-        SettingsPage(app)
-            .tapAPIAccessCell()
-
-        APIAccessPage(app)
-            .tapAddButton()
-
-        allowLocalNetworkAccessIfAsked()
-
-        AddAccessMethodPage(app)
-            .tapNameCell()
-            .enterText(customAccessMethodName)
-            .tapTypeCell()
-            .tapSOCKS5TypeValueCell()
-            .tapServerCell()
-            .enterText("123.123.123.123")
-            .dismissKeyboard()
-            .tapPortCell()
-            .enterText("123")
-            .dismissKeyboard()
-            .tapAddButton()
-            .waitForAPIUnreachableLabel()
-
-        AddAccessMethodAPIUnreachableAlert(app)
-            .tapSaveButton()
-
-        disableBuiltinAccessMethods()
-
-        SettingsPage(app)
-            .swipeDownToDismissModal()
+        breakConnectivity()
 
         // Actual test. Make sure it is possible to connect to a relay
         TunnelControlPage(app)
