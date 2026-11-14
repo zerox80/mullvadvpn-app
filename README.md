@@ -54,7 +54,7 @@ the current state of the latest code in git, not necessarily any existing releas
 | Optional local network access           |    ✓    |   ✓   |   ✓   |    ✓    |  ✓\* |
 | [Externally audited](./audits)          |    ✓    |   ✓   |   ✓   |    ✓    |  ✓ |
 
-\* The local network is always accessible on iOS with the current implementation
+\* Local network is accessible by default on iOS, enabling _Force all apps_ disables LAN access.
 
 [DAITA]: https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita
 
@@ -323,7 +323,6 @@ Try installing one of these packages using the system's package manager:
 
 
 ### Building, testing and misc
-- **build-windows-modules.sh** - Compiles the C++ libraries needed on Windows
 - **build.sh** - Sanity checks the working directory state and then builds installers for the app
 
 ### Mullvad Daemon

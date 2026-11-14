@@ -40,7 +40,7 @@ import net.mullvad.mullvadvpn.lib.ui.theme.color.positive
 @Composable
 @Preview
 private fun PreviewConnectionButton(
-    @PreviewParameter(TunnelStatePreviewParameterProvider::class) tunnelState: TunnelState
+    @PreviewParameter(TunnelStatePreviewParameterProvider::class) tunnelState: TunnelState,
 ) {
     AppTheme {
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.mediumSpacer)) {
@@ -102,7 +102,7 @@ fun ConnectionButton(
                             R.string.dismiss
                         }
                     }
-                }
+                },
         )
 
     val onClick =
@@ -157,7 +157,7 @@ private fun ConnectionButtonWithPause(
 ) {
     CompositionLocalProvider(
         LocalMinimumInteractiveComponentSize provides
-            Dimens.reconnectButtonMinInteractiveComponentSize
+            Dimens.reconnectButtonMinInteractiveComponentSize,
     ) {
         Row(
             modifier =
@@ -187,7 +187,7 @@ private fun ConnectionButtonWithPause(
                     modifier =
                         Modifier.padding(
                             start =
-                                Dimens.switchLocationRetryMinWidth + Dimens.reconnectButtonDivider
+                                Dimens.switchLocationRetryMinWidth + Dimens.reconnectButtonDivider,
                         ),
                 )
             }

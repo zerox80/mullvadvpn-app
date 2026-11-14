@@ -3,6 +3,7 @@ package net.mullvad.mullvadvpn.feature.addtime.impl
 import android.app.Activity
 import app.cash.turbine.test
 import arrow.core.right
+import io.mockk.Awaits
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -53,7 +54,7 @@ class AddTimeViewModelTest {
             VerificationResult.NothingToVerify.right()
         coEvery { mockPaymentUseCase.queryPaymentAvailability() } just Runs
         coEvery { mockPaymentUseCase.resetPurchaseResult() } just Runs
-        coEvery { mockAccountRepository.refreshAccountData(any()) } just Runs
+        coEvery { mockAccountRepository.fetchAccountData(any()) } just Awaits
 
         viewModel =
             AddTimeViewModel(
@@ -149,7 +150,7 @@ class AddTimeViewModelTest {
         purchaseResult.emit(purchaseResultData)
 
         // Assert
-        coVerify { mockAccountRepository.refreshAccountData(ignoreTimeout = true) }
+        coVerify { mockAccountRepository.fetchAccountData(ignoreLastSuccessful = true) }
     }
 
     @Test
@@ -213,7 +214,7 @@ class AddTimeViewModelTest {
             paymentAvailability.emit(PaymentAvailability.ProductsAvailable(listOf(paymentProduct)))
             awaitItem()
             purchaseResult.emit(
-                purchaseResultLoading
+                purchaseResultLoading,
             ) // Set up loading state so we get a new state when we emit the error
             val loadingItem = awaitItem()
             assertIs<Lc.Content<AddTimeUiState>>(loadingItem)
@@ -241,7 +242,7 @@ class AddTimeViewModelTest {
             paymentAvailability.emit(PaymentAvailability.ProductsAvailable(listOf(paymentProduct)))
             awaitItem()
             purchaseResult.emit(
-                purchaseResultLoading
+                purchaseResultLoading,
             ) // Set up loading state so we get a new state when we emit canceled
             val loadingItem = awaitItem()
             assertIs<Lc.Content<AddTimeUiState>>(loadingItem)

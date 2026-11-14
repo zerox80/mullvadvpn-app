@@ -2,7 +2,7 @@ package net.mullvad.mullvadvpn.feature.account.impl
 
 import app.cash.turbine.test
 import arrow.core.right
-import io.mockk.Runs
+import io.mockk.Awaits
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -50,7 +50,7 @@ class AccountViewModelTest {
 
     private val deviceState: MutableStateFlow<DeviceState?> =
         MutableStateFlow(
-            DeviceState.LoggedIn(accountNumber = dummyAccountNumber, device = dummyDevice)
+            DeviceState.LoggedIn(accountNumber = dummyAccountNumber, device = dummyDevice),
         )
     private val paymentAvailability = MutableStateFlow<PaymentAvailability?>(null)
     private val accountExpiryState = MutableStateFlow(null)
@@ -62,7 +62,7 @@ class AccountViewModelTest {
         every { mockAccountRepository.accountData } returns accountExpiryState
         every { mockDeviceRepository.deviceState } returns deviceState
         coEvery { mockPaymentUseCase.paymentAvailability } returns paymentAvailability
-        coEvery { mockAccountRepository.refreshAccountData(any()) } just Runs
+        coEvery { mockAccountRepository.fetchAccountData(any()) } just Awaits
 
         viewModel =
             AccountViewModel(
@@ -112,8 +112,8 @@ class AccountViewModelTest {
                             productId = ProductId("test_product_id"),
                             price = ProductPrice("9.99"),
                             status = PaymentStatus.PENDING,
-                        )
-                    )
+                        ),
+                    ),
             )
 
         // Act, Assert

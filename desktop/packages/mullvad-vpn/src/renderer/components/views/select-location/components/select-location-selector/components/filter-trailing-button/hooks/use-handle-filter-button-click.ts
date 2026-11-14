@@ -2,15 +2,19 @@ import React from 'react';
 import { useHistory } from 'react-router';
 
 import { RoutePath } from '../../../../../../../../../shared/routes';
+import { useSelectLocationViewContext } from '../../../../../SelectLocationViewContext';
 import { useFilterTrailingButtonContext } from '../FilterTrailingButtonContext';
 
 export function useHandleFilterButtonClick() {
+  const { setLocationType } = useSelectLocationViewContext();
+
   const { type } = useFilterTrailingButtonContext();
   const history = useHistory();
 
   const handleFilterButtonClick = React.useCallback(() => {
-    const locationType = type === 'entryAutomatic' ? 'entry' : type;
+    setLocationType(type);
 
+    const locationType = type === 'automaticEntry' ? 'entry' : type;
     history.push(RoutePath.filter, {
       options: [
         {
@@ -19,7 +23,7 @@ export function useHandleFilterButtonClick() {
         },
       ],
     });
-  }, [history, type]);
+  }, [history, setLocationType, type]);
 
   return handleFilterButtonClick;
 }

@@ -64,7 +64,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 private fun PreviewMultihopScreen(
     @PreviewParameter(MultihopUiStatePreviewParameterProvider::class)
-    state: Lc<Boolean, MultihopUiState>
+    state: Lc<Boolean, MultihopUiState>,
 ) {
     AppTheme {
         MultihopScreen(
@@ -171,7 +171,7 @@ private fun MultihopContent(
     val pagerState = rememberPagerState(pageCount = { MultihopPages.size })
     Carousel(pagerState = pagerState, pages = MultihopPages)
     MultihopOptionsList(
-        modifier = Modifier.padding(horizontal = Dimens.smallSpacer),
+        modifier = Modifier.padding(horizontal = Dimens.sideMarginNew),
         state = state,
         onMultihopModeSelected = onMultihopModeSelected,
         onWhenNeededInfoClick = onWhenNeededInfoClick,
@@ -243,10 +243,10 @@ private val MultihopPages =
                     @Composable {
                         CarouselParagraph(
                             annotatedStringResource(
-                                R.string.multihop_description_slide_1_first_paragraph
-                            )
+                                R.string.multihop_description_slide_1_first_paragraph,
+                            ),
                         )
-                    }
+                    },
                 ),
         ),
         CarouselPage(
@@ -257,15 +257,15 @@ private val MultihopPages =
                     @Composable {
                         CarouselParagraph(
                             annotatedStringResource(
-                                R.string.multihop_description_slide_2_first_paragraph
-                            )
+                                R.string.multihop_description_slide_2_first_paragraph,
+                            ),
                         )
                     },
                     @Composable {
                         CarouselParagraph(
                             annotatedStringResource(
-                                R.string.multihop_description_slide_2_second_paragraph
-                            )
+                                R.string.multihop_description_slide_2_second_paragraph,
+                            ),
                         )
                     },
                     @Composable {
@@ -294,10 +294,10 @@ private val MultihopPages =
                     @Composable {
                         CarouselParagraph(
                             annotatedStringResource(
-                                R.string.multihop_description_slide_3_first_paragraph
-                            )
+                                R.string.multihop_description_slide_3_first_paragraph,
+                            ),
                         )
-                    }
+                    },
                 ),
         ),
         CarouselPage(
@@ -308,10 +308,10 @@ private val MultihopPages =
                     @Composable {
                         CarouselParagraph(
                             annotatedStringResource(
-                                R.string.multihop_description_slide_4_first_paragraph
-                            )
+                                R.string.multihop_description_slide_4_first_paragraph,
+                            ),
                         )
-                    }
+                    },
                 ),
         ),
     )

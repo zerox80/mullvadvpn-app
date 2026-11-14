@@ -47,7 +47,7 @@ class TunnelPauseRepositoryTest {
             DeviceState.LoggedIn(
                 accountNumber = AccountNumber("1234123412341234"),
                 device = mockk(),
-            )
+            ),
         )
 
     private val clock = MutableClock(NOW)

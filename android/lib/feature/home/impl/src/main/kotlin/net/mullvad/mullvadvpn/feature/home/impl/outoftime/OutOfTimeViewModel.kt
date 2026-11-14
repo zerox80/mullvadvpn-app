@@ -60,7 +60,7 @@ class OutOfTimeViewModel(
                         deviceName = deviceState.displayName(),
                         showSitePayment = !isPlayBuild,
                         paymentStatus = paymentAvailability?.status(),
-                    )
+                    ),
                 )
             }
             .stateIn(
@@ -97,7 +97,7 @@ class OutOfTimeViewModel(
     }
 
     private suspend fun updateAccountExpiry() {
-        accountRepository.refreshAccountData()
+        accountRepository.fetchAccountData()
     }
 
     private fun notOutOfTimeEffect() =

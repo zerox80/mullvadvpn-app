@@ -161,7 +161,7 @@ private const val MIN_HOP_DISTANCE = 20f
 @Preview("Initial|Connected|Disconnected|Connecting|Error.VpnPermissionDenied")
 @Composable
 private fun PreviewAccountScreen(
-    @PreviewParameter(ConnectUiStatePreviewParameterProvider::class) state: ConnectUiState
+    @PreviewParameter(ConnectUiStatePreviewParameterProvider::class) state: ConnectUiState,
 ) {
     AppTheme {
         ConnectScreen(
@@ -237,13 +237,13 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
                     is PrepareError.OtherLegacyAlwaysOnVpn ->
                         launch {
                             snackbarHostState.showSnackbarImmediately(
-                                message = sideEffect.prepareError.toMessage(resources)
+                                message = sideEffect.prepareError.toMessage(resources),
                             )
                         }
                     is PrepareError.OtherAlwaysOnApp ->
                         launch {
                             snackbarHostState.showSnackbarImmediately(
-                                message = sideEffect.prepareError.toMessage(resources)
+                                message = sideEffect.prepareError.toMessage(resources),
                             )
                         }
                     is PrepareError.NotPrepared -> {
@@ -254,7 +254,7 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
                             // crashing we will tell the user about the issue.
                             snackbarHostState.showSnackbarImmediately(
                                 message =
-                                    resources.getString(R.string.vpn_dialog_activity_not_found)
+                                    resources.getString(R.string.vpn_dialog_activity_not_found),
                             )
                         }
                     }
@@ -262,12 +262,12 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
 
             ConnectViewModel.UiSideEffect.ConnectError.Generic ->
                 snackbarHostState.showSnackbarImmediately(
-                    message = resources.getString(R.string.error_occurred)
+                    message = resources.getString(R.string.error_occurred),
                 )
 
             ConnectViewModel.UiSideEffect.PauseFailed ->
                 snackbarHostState.showSnackbarImmediately(
-                    message = resources.getString(R.string.pause_vpn_failed)
+                    message = resources.getString(R.string.pause_vpn_failed),
                 )
 
             is ConnectViewModel.UiSideEffect.ConnectError.PermissionDenied -> {
@@ -279,7 +279,7 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
                                     R.string.vpn_permission_denied_error
                                 } else {
                                     R.string.vpn_permission_denied_error_no_vpn_settings
-                                }
+                                },
                             ),
                         actionLabel =
                             if (sideEffect.systemVpnSettingsAvailable) {
@@ -293,7 +293,9 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
                                 launch {
                                     snackbarHostState.showSnackbarImmediately(
                                         message =
-                                            resources.getString(R.string.vpn_settings_not_available)
+                                            resources.getString(
+                                                R.string.vpn_settings_not_available,
+                                            ),
                                     )
                                 }
                             }
@@ -368,7 +370,7 @@ fun Connect(navigator: Navigator, animatedVisibilityScope: AnimatedVisibilitySco
             onClickShowMultihopMigrationWizard =
                 dropUnlessResumed { multihopMigrationData: MultihopMigrationData ->
                     navigator.navigate(
-                        MultihopMigrationNavKey(multihopMigrationData = multihopMigrationData)
+                        MultihopMigrationNavKey(multihopMigrationData = multihopMigrationData),
                     )
                 },
             onClickDismissMigrateMultihopWarning =
@@ -442,7 +444,7 @@ fun ConnectScreen(
                         MullvadSnackbar(snackbarData = snackbarData, actionOnNewLine = true)
                     },
                 )
-            }
+            },
         ) {
             NavigationDrawerTv(
                 daysLeftUntilExpiry = state.daysLeftUntilExpiry,
@@ -508,7 +510,7 @@ private fun Content(
                 start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
                 end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
             )
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
         MullvadMap(state, indicatorPercentOffset)
 
@@ -532,7 +534,7 @@ private fun Content(
 
         Box(
             modifier =
-                Modifier.fillMaxSize().padding(bottom = paddingValues.calculateBottomPadding())
+                Modifier.fillMaxSize().padding(bottom = paddingValues.calculateBottomPadding()),
         ) {
             NotificationBanner(
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -698,7 +700,7 @@ private fun ConnectionCardHeader(
                     enabled = state.tunnelState.isConnectingOrConnected(),
                     onClick = onToggleExpand,
                 )
-                .testTag(CONNECT_CARD_HEADER_TEST_TAG)
+                .testTag(CONNECT_CARD_HEADER_TEST_TAG),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ConnectionStatusText(state = state.tunnelState)
@@ -821,7 +823,7 @@ private fun ConnectionInfo(
                         scrollState,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = AlphaScrollbar),
                     )
-                    .verticalScroll(scrollState)
+                    .verticalScroll(scrollState),
         ) {
             FeatureIndicatorsPanel(featureIndicators, expanded, onToggleExpand, onNavigateToFeature)
 

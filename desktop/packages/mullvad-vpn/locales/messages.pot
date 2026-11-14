@@ -110,6 +110,9 @@ msgstr ""
 msgid "CONNECTING..."
 msgstr ""
 
+msgid "Continue"
+msgstr ""
+
 msgid "Create"
 msgstr ""
 
@@ -212,12 +215,6 @@ msgstr ""
 msgid "Lockdown mode"
 msgstr ""
 
-msgid "Magic"
-msgstr ""
-
-msgid "Magic multihop"
-msgstr ""
-
 #. This refers to the multihop setting in the VPN settings view. This is
 #. displayed when the feature is on.
 msgid "Multihop"
@@ -298,6 +295,9 @@ msgid "Search for..."
 msgstr ""
 
 msgid "SECURE CONNECTION"
+msgstr ""
+
+msgid "Selected"
 msgstr ""
 
 #. Text for button that sets a location as entry relay.
@@ -391,6 +391,16 @@ msgctxt "accessibility"
 msgid "Anti-censorship settings"
 msgstr ""
 
+#. Accessible explanation for the symbol indicating automatic multihop.
+msgctxt "accessibility"
+msgid "Automatic"
+msgstr ""
+
+#. Accessible explanation for the symbol indicating automatic multihop.
+msgctxt "accessibility"
+msgid "Automatic multihop"
+msgstr ""
+
 msgctxt "accessibility"
 msgid "Clear search"
 msgstr ""
@@ -427,6 +437,13 @@ msgstr ""
 #. %(location)s - The name of the location that will be connected to when the button is clicked.
 msgctxt "accessibility"
 msgid "Connect to %(location)s"
+msgstr ""
+
+#. Accessibility label for button that connects to a location and uses an automatic entry.
+#. Available placeholders:
+#. %(location)s - The name of the location that will be connected to when the button is clicked.
+msgctxt "accessibility"
+msgid "Connect to %(location)s, will connect via an automatic entry"
 msgstr ""
 
 #. Provided to accessibility tools such as screenreaders to describe a button
@@ -1891,6 +1908,10 @@ msgctxt "locations-feature"
 msgid "Exit"
 msgstr ""
 
+msgctxt "locations-feature"
+msgid "You currently have entry filters applied. Switching to “When needed”, the app will ignore filter settings for the entry server that is being automatically selected."
+msgstr ""
+
 #. This is a warning message shown when the app is blocking the users
 #. internet connection while logged out.
 #. Available placeholder:
@@ -2090,7 +2111,7 @@ msgstr ""
 
 #. Instructions shown in one step of a migration wizard.
 msgctxt "migrated-settings-view"
-msgid "Multihop is now split into three mode: When needed, Always, and Never. This gives you more flexibility with your connection preferences."
+msgid "Multihop is now split into three modes: When needed, Always, and Never. This gives you more flexibility with your connection preferences."
 msgstr ""
 
 #. Title shown in one step of a migration wizard.
@@ -2139,7 +2160,7 @@ msgid "This mode allows the app to automatically multihop through an additional 
 msgstr ""
 
 msgctxt "migrated-settings-view"
-msgid "This will be indicated by the symbol: <img></img>"
+msgid "This will be indicated by the <img></img> symbol."
 msgstr ""
 
 #. Instructions shown in one step of a migration wizard.
@@ -2469,6 +2490,18 @@ msgctxt "select-location-view"
 msgid "Enable recents"
 msgstr ""
 
+#. Label for a filter chip explaining that the user is selecting
+#. an entry location
+msgctxt "select-location-view"
+msgid "Entry"
+msgstr ""
+
+#. Label for a filter chip explaining that the user is selecting
+#. an exit location
+msgctxt "select-location-view"
+msgid "Exit"
+msgstr ""
+
 #. Title for a menu with items for the Multihop mode setting options.
 msgctxt "select-location-view"
 msgid "Multihop mode"
@@ -2492,13 +2525,6 @@ msgstr ""
 
 msgctxt "select-location-view"
 msgid "No result for: “%(searchTerm)s“"
-msgstr ""
-
-#. Label for indicator that shows that obfuscation is being used as a filter.
-#. Available placeholders:
-#. %(obfuscation)s - type of obfuscation in use
-msgctxt "select-location-view"
-msgid "Obfuscation: %(obfuscation)s"
 msgstr ""
 
 #. Text describing that the user should try to update their filters
@@ -2532,10 +2558,6 @@ msgctxt "select-location-view"
 msgid "Set multihop to \"Always\""
 msgstr ""
 
-msgctxt "select-location-view"
-msgid "Setting: %(settingName)s"
-msgstr ""
-
 #. Text showing how many locations are currently shown out of the total number of locations, e.g. "Showing 5 of 250"
 #. Available placeholders:
 #. %(visibleRelays)s: The number of relays currently shown
@@ -2560,9 +2582,15 @@ msgctxt "select-location-view"
 msgid "When needed"
 msgstr ""
 
-#. Text in dialog explaning the behavior of the “Automatic” location option
+#. Text in dialog explaining the behavior of the “Automatic” location option
 msgctxt "select-location-view"
 msgid "When the “Automatic” location is selected, the app automatically picks a random entry server, prioritizing those closer to the exit location for better performance."
+msgstr ""
+
+#. Text in dialog explaining that selecting the “Automatic” location option
+#. will override the entry filters the user has selected.
+msgctxt "select-location-view"
+msgid "You currently have entry filters applied. Selecting the “Automatic” location, the app will ignore filter settings for the entry server."
 msgstr ""
 
 msgctxt "settings-import"
@@ -3685,9 +3713,6 @@ msgid "Connecting..."
 msgstr ""
 
 msgid "Contact support"
-msgstr ""
-
-msgid "Continue"
 msgstr ""
 
 msgid "Copied Mullvad account number to clipboard"

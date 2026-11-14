@@ -82,6 +82,38 @@ test.describe('Select location', () => {
       await expect(automaticLocation).toBeVisible();
     });
 
+    test('Should update to automatic location after confirming entry filters override warning dialog', async () => {
+      const providers = helpers.getProvidersFromRelayList(relayList);
+      settings = await helpers.updateMockEntryRelayFilter(
+        {
+          providers: [providers[0]],
+        },
+        settings,
+      );
+      settings = await helpers.mockSettings(
+        {
+          entryLocation: {
+            only: {
+              country: relayList.countries[0].code,
+            },
+          },
+        },
+        settings,
+      );
+
+      const automaticLocation = routes.selectLocation.getAutomaticLocation();
+      await automaticLocation.click();
+
+      const automaticLocationWarningDialogConfirmButton =
+        routes.selectLocation.getAutomaticLocationWarningDialogContinueButton();
+      await expect(automaticLocationWarningDialogConfirmButton).toBeVisible();
+
+      await Promise.all([
+        util.ipc.settings.setRelaySettings.expect(),
+        automaticLocationWarningDialogConfirmButton.click(),
+      ]);
+    });
+
     test('Should show relays in exit list', async () => {
       await routes.selectLocation.gotoExitLocations();
 
@@ -477,9 +509,6 @@ test.describe('Select location', () => {
                 settings,
               );
               await util.expectRoute(RoutePath.selectLocation);
-              // TODO: Remove goToLocations when the Filter view selects
-              // the appropriate exit or entry locations automatically
-              await routes.selectLocation.gotoLocations(locationType);
 
               const providerFilterChip = routes.selectLocation.getFilterChipButton('Providers: 1');
               await expect(providerFilterChip).toBeVisible();
@@ -507,9 +536,6 @@ test.describe('Select location', () => {
 
               await routes.filter.applyFilter();
               await util.expectRoute(RoutePath.selectLocation);
-              // TODO: Remove goToLocations when the Filter view selects
-              // the appropriate exit or entry locations automatically
-              await routes.selectLocation.gotoLocations(locationType);
 
               const ownerFilterChip = routes.selectLocation.getFilterChipButton('Rented');
               await expect(ownerFilterChip).toBeVisible();
@@ -597,19 +623,19 @@ test.describe('Select location', () => {
 
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
-        const quicFilterChip = routes.filter.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.filter.getFilterChipLink('QUIC');
         await expect(quicFilterChip).toBeVisible();
 
         settings = await helpers.mockAntiCensorship(ObfuscationType.lwo, settings);
 
-        const lwoFilterChip = routes.filter.getFilterChipLink('Obfuscation: LWO');
+        const lwoFilterChip = routes.filter.getFilterChipLink('LWO');
         await expect(lwoFilterChip).toBeVisible();
       });
 
       test('Should apply filter when QUIC when viewing locations', async () => {
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
-        const quicFilterChip = routes.selectLocation.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.selectLocation.getFilterChipLink('QUIC');
         await expect(quicFilterChip).toBeVisible();
 
         const relaySelectionPaths = helpers.toSelectionPaths(
@@ -629,7 +655,7 @@ test.describe('Select location', () => {
       test('Should display LWO filter when it is selected when viewing locations', async () => {
         settings = await helpers.mockAntiCensorship(ObfuscationType.lwo, settings);
 
-        const lwoFilterChip = routes.selectLocation.getFilterChipLink('Obfuscation: LWO');
+        const lwoFilterChip = routes.selectLocation.getFilterChipLink('LWO');
         await expect(lwoFilterChip).toBeVisible();
 
         const relaySelectionPaths = helpers.toSelectionPaths(
@@ -795,7 +821,7 @@ test.describe('Select location', () => {
       test('Should display QUIC filter when viewing entry locations and not when viewing exit locations', async () => {
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
-        const quicFilterChip = routes.selectLocation.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.selectLocation.getFilterChipLink('QUIC');
 
         // Present on entry
         await routes.selectLocation.gotoEntryLocations();
@@ -809,7 +835,7 @@ test.describe('Select location', () => {
       test('Should display QUIC filter chip when viewing entry filters and not when viewing exit filters', async () => {
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
-        const quicFilterChip = routes.filter.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.filter.getFilterChipLink('QUIC');
 
         // Present on entry
         await routes.selectLocation.gotoEntryFilter();
@@ -819,6 +845,85 @@ test.describe('Select location', () => {
         // Not present on exit
         await routes.selectLocation.gotoExitFilter();
         await expect(quicFilterChip).not.toBeVisible();
+      });
+
+      test('Should show a warning dialog when changing multihop mode without automatic entry location and with active entry filters', async () => {
+        settings = await helpers.mockSettings(
+          {
+            entryLocation: {
+              only: {
+                country: relayList.countries[0].code,
+              },
+            },
+          },
+          settings,
+        );
+
+        const providers = helpers.getProvidersFromRelayList(relayList);
+        settings = await helpers.updateMockEntryRelayFilter(
+          {
+            providers: [providers[0]],
+          },
+          settings,
+        );
+
+        // Open menu and select `when-needed`
+        await routes.selectLocation.openHeaderMenu();
+        const headerMenuItem = routes.selectLocation.getHeaderMenuItem('When needed');
+
+        await expect(headerMenuItem).toBeVisible();
+        await Promise.all([util.ipc.settings.setRelaySettings.ignore(), headerMenuItem.click()]);
+
+        // Cancel first
+        const cancelButton = routes.selectLocation.getEntryFiltersOverrideDialogButton('Cancel');
+        await expect(cancelButton).toBeVisible();
+        await cancelButton.click();
+
+        // Trigger dialog again
+        await Promise.all([util.ipc.settings.setRelaySettings.ignore(), headerMenuItem.click()]);
+
+        const continueButton =
+          routes.selectLocation.getEntryFiltersOverrideDialogButton('Continue');
+        await expect(continueButton).toBeVisible();
+
+        // Multihop mode should now be updated
+        await Promise.all([util.ipc.settings.setRelaySettings.ignore(), continueButton.click()]);
+      });
+
+      test('Should display "Entry" or "Exit" filter chip when searching for an entry or exit location respectively', async () => {
+        settings = await helpers.mockSettings(
+          {
+            multihop: 'always',
+          },
+          settings,
+        );
+
+        const entryFilterChip = routes.selectLocation.getFilterChipButton('Entry');
+
+        await routes.selectLocation.gotoEntryLocations();
+
+        // Present after search
+        await routes.selectLocation.getEntryInput().fill('this is a search term');
+        await expect(entryFilterChip).toBeVisible();
+
+        // Reset search via clear search button
+        await routes.selectLocation.getClearSearchButton().click();
+
+        // Entry filter not present when not searching
+        await expect(entryFilterChip).not.toBeVisible();
+
+        await routes.selectLocation.gotoExitLocations();
+
+        const exitFilterChip = routes.selectLocation.getFilterChipButton('Exit');
+
+        await routes.selectLocation.getExitInput().fill('this is a search term');
+        await expect(exitFilterChip).toBeVisible();
+
+        // Reset search via escape
+        await routes.selectLocation.getExitInput().press('Escape');
+
+        // Exit filter not present when not searching
+        await expect(exitFilterChip).not.toBeVisible();
       });
     });
 
@@ -896,7 +1001,7 @@ test.describe('Select location', () => {
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
         // Ensure QUIC filter can be seen when using multihop: never
-        const quicFilterChip = routes.selectLocation.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.selectLocation.getFilterChipLink('QUIC');
         await expect(quicFilterChip).toBeVisible();
 
         // Switch to multihop: when-needed to ensure QUIC filter is hidden
@@ -954,7 +1059,7 @@ test.describe('Select location', () => {
         // Then we can set up the anti-censorship method and verify that it is present under the right conditions
         settings = await helpers.mockAntiCensorship(ObfuscationType.quic, settings);
 
-        const quicFilterChip = routes.filter.getFilterChipLink('Obfuscation: QUIC');
+        const quicFilterChip = routes.filter.getFilterChipLink('QUIC');
 
         // Present on entry filters when using automatic location
         await routes.selectLocation.gotoEntryAutomaticFilter();
@@ -964,6 +1069,51 @@ test.describe('Select location', () => {
         // Not present on exit
         await routes.selectLocation.gotoExitFilter();
         await expect(quicFilterChip).not.toBeVisible();
+      });
+
+      test('Should display "Exit" filter chip only when connected and searching for a location', async () => {
+        // Enter search mode
+        await routes.selectLocation.getExitInput().fill('this is a search term');
+
+        // Filter chip shouldn't be visible when searching if an automatic entry isn't used
+        const exitFilterChip = routes.selectLocation.getFilterChipButton('Exit');
+        await expect(exitFilterChip).not.toBeVisible();
+
+        // Need to set up all the circumstances that makes the Automatic entry appear
+        settings = await helpers.mockSettings(
+          {
+            multihop: 'when-needed',
+          },
+          settings,
+        );
+
+        settings = await helpers.mockEntryAndExitLocations(
+          {
+            entryLocation: {
+              only: {
+                country: relayList.countries[0].code,
+              },
+            },
+            exitLocation: {
+              only: {
+                country: relayList.countries[0].code,
+              },
+            },
+          },
+          settings,
+        );
+
+        await helpers.mockConnectTunnel({
+          ...mockData.location,
+          entryHostname: relayList.countries[0].cities[0].relays[0].hostname,
+        });
+
+        // We are now connected and have an automatic entry location, which means the Filter chip should be visible
+        await expect(exitFilterChip).toBeVisible();
+
+        // Reset search via clear search button and Filter chip should no longer be visible
+        await routes.selectLocation.getClearSearchButton().click();
+        await expect(exitFilterChip).not.toBeVisible();
       });
     });
 

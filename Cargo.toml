@@ -48,9 +48,10 @@ members = [
   "talpid-tunnel-config-client",
   "talpid-types",
   "talpid-windows",
+  "talpid-winfw",
   "talpid-wireguard",
   "tunnel-obfuscation",
-  "windows-installer"
+  "windows-installer",
 ]
 exclude = ["ci/ios/test-router/raas"]
 # Default members dictate what is built when running `cargo build` in the root directory.
@@ -93,6 +94,22 @@ ipnetwork = "0.21.1"
 itertools = "0.14"
 log = "0.4"
 mockito = "1.7.2"
+mullvad-api = { path = "./mullvad-api" }
+mullvad-api-constants = { path = "./mullvad-api/mullvad-api-constants" }
+mullvad-daemon = { path = "./mullvad-daemon" }
+mullvad-daemon-relay-selector = { path = "./mullvad-daemon-relay-selector" }
+mullvad-encrypted-dns-proxy = { path = "./mullvad-encrypted-dns-proxy" }
+mullvad-fs = { path = "./mullvad-fs" }
+mullvad-leak-checker = { path = "./mullvad-leak-checker" }
+mullvad-logging = { path = "./mullvad-logging" }
+mullvad-management-interface = { path = "./mullvad-management-interface" }
+mullvad-masque-proxy = { path = "./mullvad-masque-proxy" }
+mullvad-paths = { path = "./mullvad-paths" }
+mullvad-relay-selector = { path = "./mullvad-relay-selector" }
+mullvad-tls-client = { path = "./mullvad-tls-client" }
+mullvad-types = { path = "./mullvad-types" }
+mullvad-update = { path = "./mullvad-update" }
+mullvad-version = { path = "./mullvad-version" }
 netlink-packet-core = "0.9.0"
 netlink-packet-route = "0.33.0"
 netlink-proto = "0.13.0"
@@ -108,6 +125,12 @@ pnet_packet = "0.35.0"
 proptest = "1.9"
 prost = "0.14.3"
 prost-types = "0.14.3"
+quinn = { version = "0.11", default-features = false, features = [
+  "log",
+  "runtime-tokio",
+  "rustls-aws-lc-rs"
+] }
+quinn-proto = { version = "0.11", default-features = false }
 rand = "0.9.3"
 reqwest = { version = "0.12.23", default-features = false, features = [
   "rustls-tls-webpki-roots-no-provider"
@@ -134,9 +157,25 @@ socket2 = "0.6.5"
 strum = { version = "0.27" }
 surge-ping = "0.8.4"
 system-configuration = "0.7.0"
+talpid-cgroup = { path = "./talpid-cgroup" }
+talpid-core = { path = "./talpid-core" }
 talpid-dbus = { path = "./talpid-dbus", default-features = false, features = ["libdbus"] }
+talpid-dns = { path = "./talpid-dns" }
 talpid-error = { path = "./talpid-error" }
+talpid-future = { path = "./talpid-future" }
 talpid-logging = { path = "./talpid-logging" }
+talpid-macos = { path = "./talpid-macos" }
+talpid-net = { path = "./talpid-net" }
+talpid-netstack = { path = "./talpid-netstack" }
+talpid-platform-metadata = { path = "./talpid-platform-metadata" }
+talpid-routing = { path = "./talpid-routing" }
+talpid-time = { path = "./talpid-time" }
+talpid-tunnel = { path = "./talpid-tunnel" }
+talpid-tunnel-config-client = { path = "./talpid-tunnel-config-client" }
+talpid-types = { path = "./talpid-types" }
+talpid-windows = { path = "./talpid-windows" }
+talpid-winfw = { path = "./talpid-winfw" }
+talpid-wireguard = { path = "./talpid-wireguard" }
 tempfile = "3.27.0"
 thiserror = "2.0"
 tipsy = "0.7.0"
@@ -154,7 +193,7 @@ udp-over-tcp = { git = "https://github.com/mullvad/udp-over-tcp", rev = "06e6438
 uniffi = "0.31.2"
 vec1 = "1.12"
 webpki-roots = "1.0.4"
-wfp = "0.2.0"
+wfp = "0.3.0"
 widestring = "1.2"
 windows = "0.62.2"
 windows-registry = "0.6.1"
@@ -241,6 +280,18 @@ inherits = "dev"
 debug = "line-tables-only"
 # Incremental artifacts are large and never reused between CI runs.
 incremental = false
+
+[profile.dev-ios]
+inherits = "dev"
+
+[profile.dev-ios.package]
+chacha20.opt-level = 3
+chacha20poly1305.opt-level = 3
+gotatun.opt-level = 3
+mullvad-ios.opt-level = 2
+poly1305.opt-level = 3
+ring.opt-level = 3
+smoltcp.opt-level = 3
 
 # The installer-downloader is a standalone binary users download directly, so it is
 # optimized for size harder than the rest of the workspace. Used by

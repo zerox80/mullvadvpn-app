@@ -1,7 +1,9 @@
 package net.mullvad.mullvadvpn.feature.home.impl.connect.notificationbanner
 
+import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -23,8 +25,12 @@ class InAppNotificationController(
                     compareBy(
                         { notification -> -notification.priority },
                         { notification -> notification.statusLevel.ordinal },
-                    )
+                    ),
                 )
             }
-            .stateIn(scope, SharingStarted.Eagerly, emptyList())
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(replayExpiration = Duration.ZERO),
+                emptyList(),
+            )
 }

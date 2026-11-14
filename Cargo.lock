@@ -2211,15 +2211,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "home"
-version = "0.5.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc627f471c528ff0c4a49e1d5e60450c8f6461dd6d10ba9dcd3a61d3dff7728d"
-dependencies = [
- "windows-sys 0.61.2",
-]
-
-[[package]]
 name = "htmlize"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3007,12 +2998,6 @@ dependencies = [
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
-
-[[package]]
-name = "linux-raw-sys"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
@@ -3301,6 +3286,7 @@ dependencies = [
  "clap_complete",
  "clap_complete_nushell",
  "futures",
+ "ipnetwork",
  "itertools 0.14.0",
  "mullvad-management-interface",
  "mullvad-types",
@@ -3312,7 +3298,7 @@ dependencies = [
  "talpid-types",
  "thiserror 2.0.19",
  "tokio",
- "windows-sys 0.61.2",
+ "vec1",
  "winresource",
 ]
 
@@ -3551,6 +3537,7 @@ dependencies = [
  "log",
  "mullvad-masque-proxy",
  "quinn",
+ "quinn-proto",
  "rand 0.9.4",
  "rustls",
  "rustls-pki-types",
@@ -3606,7 +3593,6 @@ dependencies = [
  "tokio",
  "tracing-subscriber",
  "uuid",
- "windows-sys 0.61.2",
  "winresource",
 ]
 
@@ -5207,27 +5193,14 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.44"
+version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
+checksum = "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa"
 dependencies = [
  "bitflags 2.13.2",
  "errno 0.3.14",
  "libc",
- "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "rustix"
-version = "1.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d"
-dependencies = [
- "bitflags 2.13.2",
- "errno 0.3.14",
- "libc",
- "linux-raw-sys 0.12.1",
+ "linux-raw-sys",
  "windows-sys 0.61.2",
 ]
 
@@ -5905,6 +5878,7 @@ dependencies = [
  "talpid-tunnel",
  "talpid-types",
  "talpid-windows",
+ "talpid-winfw",
  "talpid-wireguard",
  "test-log",
  "thiserror 2.0.19",
@@ -5912,8 +5886,6 @@ dependencies = [
  "tokio-util",
  "tun",
  "typed-builder 0.20.1",
- "wfp",
- "widestring",
  "windows",
  "windows-registry",
  "windows-service",
@@ -5945,6 +5917,7 @@ dependencies = [
  "nix 0.31.3",
  "parking_lot",
  "resolv-conf",
+ "safelog",
  "system-configuration",
  "talpid-dbus",
  "talpid-error",
@@ -6132,6 +6105,7 @@ dependencies = [
  "serde",
  "shadowsocks-crypto",
  "thiserror 2.0.19",
+ "vec1",
  "x25519-dalek",
  "zeroize",
 ]
@@ -6150,6 +6124,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "talpid-winfw"
+version = "0.0.0"
+dependencies = [
+ "insta",
+ "ipnetwork",
+ "log",
+ "talpid-types",
+ "thiserror 2.0.19",
+ "wfp",
+ "widestring",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "talpid-wireguard"
 version = "0.0.0"
 dependencies = [
@@ -6157,10 +6145,13 @@ dependencies = [
  "bitflags 1.3.2",
  "byteorder",
  "chrono",
+ "either",
  "futures",
  "gotatun",
  "insta",
  "internet-checksum",
+ "ip_network",
+ "ip_network_table",
  "ipnetwork",
  "libc",
  "log",
@@ -6203,7 +6194,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.4.2",
  "once_cell",
- "rustix 1.1.5",
+ "rustix",
  "windows-sys 0.61.2",
 ]
 
@@ -7312,9 +7303,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.10"
+version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9"
+checksum = "f5f280bbb2b287bc8e7de7e3852945a0ff50d1bbcb5ed42b6c7a568c546df171"
 dependencies = [
  "rustls-pki-types",
 ]
@@ -7330,9 +7321,9 @@ dependencies = [
 
 [[package]]
 name = "wfp"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f0382780f5db1e7101e69eb4f9b5950463e75c115967e805bef66968786c97c"
+checksum = "d1a00d160bcc49e02afc5fc587e22ff2329f31b821970be0686be6492a414226"
 dependencies = [
  "log",
  "windows-sys 0.61.2",
@@ -7340,14 +7331,11 @@ dependencies = [
 
 [[package]]
 name = "which"
-version = "4.4.2"
+version = "8.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
+checksum = "bae2f2b2b816647a1cab1acc91f5bd20812d53cb344382635ec2181940c8034f"
 dependencies = [
- "either",
- "home",
- "once_cell",
- "rustix 0.38.44",
+ "libc",
 ]
 
 [[package]]
@@ -7555,15 +7543,6 @@ name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
-dependencies = [
- "windows-targets 0.52.6",
-]
-
-[[package]]
-name = "windows-sys"
-version = "0.59.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e38bc4d79ed67fd075bcc251a1c39b32a1776bbe92e5bef1f0bf1f8c531853b"
 dependencies = [
  "windows-targets 0.52.6",
 ]
@@ -8027,7 +8006,7 @@ dependencies = [
  "hex",
  "libc",
  "ordered-stream",
- "rustix 1.1.5",
+ "rustix",
  "serde",
  "serde_repr",
  "socket2",
@@ -8185,7 +8164,7 @@ checksum = "467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d"
 dependencies = [
  "futures-core",
  "futures-io",
- "rustix 1.1.5",
+ "rustix",
  "socket2",
  "tracing",
  "windows-sys 0.61.2",

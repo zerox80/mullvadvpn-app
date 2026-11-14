@@ -45,7 +45,7 @@ class AddTimeViewModel(
                         billingPaymentState = paymentAvailability.toPaymentState(),
                         tunnelStateBlocked = tunnelState.isBlocked(),
                         showSitePayment = !isPlayBuild,
-                    )
+                    ),
                 )
             }
             .stateIn(
@@ -115,7 +115,7 @@ class AddTimeViewModel(
     }
 
     private fun updateAccountExpiry() {
-        viewModelScope.launch { accountRepository.refreshAccountData() }
+        viewModelScope.launch { accountRepository.fetchAccountData() }
     }
 
     private fun PurchaseResult.toPurchaseState() =

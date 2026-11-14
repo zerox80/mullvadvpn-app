@@ -140,7 +140,7 @@ class ConnectViewModel(
                     pausedUntil = pausedUntil,
                 )
             }
-            .launchOnStart { accountRepository.refreshAccountData(ignoreTimeout = false) }
+            .launchOnStart { accountRepository.fetchAccountData(ignoreLastSuccessful = false) }
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(VIEW_MODEL_STOP_TIMEOUT),
@@ -150,7 +150,7 @@ class ConnectViewModel(
     init {
         viewModelScope.launch {
             if (paymentUseCase.verifyPurchases().getOrNull() is VerificationResult.Success) {
-                accountRepository.refreshAccountData()
+                accountRepository.fetchAccountData()
             }
         }
         viewModelScope.launch { deviceRepository.updateDevice() }
@@ -194,7 +194,7 @@ class ConnectViewModel(
                 // If we don't have vpn system settings available we assume that there is no other
                 // always-on-vpn active.
                 _uiSideEffect.send(
-                    UiSideEffect.ConnectError.PermissionDenied(systemVpnSettingsUseCase())
+                    UiSideEffect.ConnectError.PermissionDenied(systemVpnSettingsUseCase()),
                 )
             }
         }

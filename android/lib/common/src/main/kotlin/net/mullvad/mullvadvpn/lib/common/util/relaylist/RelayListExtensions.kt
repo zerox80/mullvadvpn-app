@@ -1,6 +1,8 @@
 package net.mullvad.mullvadvpn.lib.common.util.relaylist
 
 import android.icu.text.Collator
+import android.icu.util.ULocale
+import net.mullvad.mullvadvpn.lib.common.util.JapaneseSort
 import net.mullvad.mullvadvpn.lib.model.GeoLocationId
 import net.mullvad.mullvadvpn.lib.model.RelayItem
 import net.mullvad.mullvadvpn.lib.model.RelayItemId
@@ -31,7 +33,7 @@ private class SearchProcessor(private val searchTerm: String) {
     }
 
     private fun processCountry(
-        country: RelayItem.Location.Country
+        country: RelayItem.Location.Country,
     ): Pair<RelayItem.Location.Country, SearchMatch>? {
 
         val scoredCities =
@@ -69,7 +71,7 @@ private class SearchProcessor(private val searchTerm: String) {
     }
 
     private fun processCity(
-        city: RelayItem.Location.City
+        city: RelayItem.Location.City,
     ): Pair<RelayItem.Location.City, SearchMatch>? {
 
         val scoredRelays =
@@ -118,10 +120,17 @@ fun GeoLocationId.ancestors(): List<GeoLocationId> =
     }
 
 fun List<RelayItem.Location.Country>.getRelayItemsByCodes(
-    codes: List<GeoLocationId>
+    codes: List<GeoLocationId>,
 ): List<RelayItem.Location> =
     this.filter { codes.contains(it.id) } +
         this.flatMap { it.descendants() }.filter { codes.contains(it.id) }
 
-fun <T : RelayItem> List<T>.sortedByName() =
-    this.sortedWith(compareBy(Collator.getInstance()) { it.name })
+fun <T : RelayItem> List<T>.sortedByName(): List<T> {
+    val selector: (T) -> String =
+        if (ULocale.getDefault().language == ULocale.JAPANESE.language) {
+            { item -> JapaneseSort.getSortKey(item.name) }
+        } else {
+            { item -> item.name }
+        }
+    return sortedWith(compareBy(Collator.getInstance(), selector))
+}

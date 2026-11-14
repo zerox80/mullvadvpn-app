@@ -9,9 +9,12 @@ license.workspace = true
 [dependencies]
 async-trait = { workspace = true }
 byteorder = "1"
+either = { workspace = true, optional = true }
 futures = { workspace = true }
 gotatun = { workspace = true, features = ["daita", "device", "tun"] }
 internet-checksum = "0.2"
+ip_network = { version = "0.4", optional = true }
+ip_network_table = { version = "0.2", optional = true }
 ipnetwork = { workspace = true }
 log = { workspace = true }
 once_cell = { workspace = true }
@@ -20,17 +23,18 @@ rand = { workspace = true }
 socket2 = { workspace = true, features = ["all"] }
 surge-ping = { workspace = true }
 talpid-error.workspace = true
-talpid-net = { path = "../talpid-net" }
-talpid-routing = { path = "../talpid-routing" }
-talpid-tunnel = { path = "../talpid-tunnel" }
-talpid-tunnel-config-client = { path = "../talpid-tunnel-config-client" }
-talpid-types = { path = "../talpid-types" }
+talpid-net.workspace = true
+talpid-routing.workspace = true
+talpid-tunnel.workspace = true
+talpid-tunnel-config-client.workspace = true
+talpid-types.workspace = true
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["fs", "process", "rt-multi-thread"] }
 tokio-stream = { version = "0.1", features = ["io-util"] }
 tokio-util = { workspace = true, features = ["rt"] }
 tun = { workspace = true }
 tunnel-obfuscation = { path = "../tunnel-obfuscation", features = ["gotatun"] }
+zerocopy = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
@@ -52,11 +56,18 @@ nix = { workspace = true, features = ["fs"] }
 [target."cfg(windows)".dependencies]
 bitflags = "1.2"
 chrono = { workspace = true, features = ["clock"] }
-talpid-windows = { path = "../talpid-windows" }
+talpid-windows.workspace = true
 widestring = { workspace = true }
 windows-sys = { workspace = true }
 
 [features]
+custom-vpn = [
+  "dep:either",
+  "dep:ip_network",
+  "dep:ip_network_table",
+  "talpid-tunnel/custom-vpn",
+  "talpid-types/custom-vpn",
+]
 multihop-pcap = ["gotatun/pcap"]
 
 [lints]

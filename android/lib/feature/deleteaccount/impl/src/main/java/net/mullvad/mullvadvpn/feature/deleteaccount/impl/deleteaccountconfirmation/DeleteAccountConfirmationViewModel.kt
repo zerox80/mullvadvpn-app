@@ -3,7 +3,6 @@ package net.mullvad.mullvadvpn.feature.deleteaccount.impl.deleteaccountconfirmat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,13 +10,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 import net.mullvad.mullvadvpn.lib.common.constant.VIEW_MODEL_STOP_TIMEOUT
 import net.mullvad.mullvadvpn.lib.common.util.daysLeft
 import net.mullvad.mullvadvpn.lib.common.util.delayAtLeast
@@ -57,17 +53,20 @@ class DeleteAccountConfirmationViewModel(
     private fun timeLeftFlow(): Flow<DaysLeftState> = flow {
         emit(DaysLeftState.Loading)
 
-        try {
-            val accountExpiry =
-                withTimeout(3.seconds) { accountRepository.accountData.filterNotNull().first() }
-            val daysLeft = accountExpiry.expiryDate.daysLeft()?.toInt()
-            if (daysLeft == null) {
-                emit(DaysLeftState.NoDaysLeft)
-            } else {
-                emit(DaysLeftState.DaysLeft(daysLeft))
-            }
-        } catch (_: TimeoutCancellationException) {
+        val accountExpiry =
+            accountRepository.fetchAccountData(timeout = ACCOUNT_EXPIRY_TIMEOUT)?.expiryDate
+
+        // Expiry timeout, the daemon returned and error or user was logged out for some reason
+        if (accountExpiry == null) {
             emit(DaysLeftState.Error)
+            return@flow
+        }
+
+        val daysLeft = accountExpiry.daysLeft()?.toInt()
+        if (daysLeft == null) {
+            emit(DaysLeftState.NoDaysLeft)
+        } else {
+            emit(DaysLeftState.DaysLeft(daysLeft))
         }
     }
 
@@ -91,7 +90,7 @@ class DeleteAccountConfirmationViewModel(
             .fold(
                 {
                     _uiSideEffect.send(
-                        DeleteAccountConfirmationUiSideEffect.DeleteAccountFailed(it)
+                        DeleteAccountConfirmationUiSideEffect.DeleteAccountFailed(it),
                     )
                     isLoading.value = false
                 },
@@ -102,6 +101,10 @@ class DeleteAccountConfirmationViewModel(
     fun onAccountInputChanged(input: String) {
         verificationError.value = null
         accountInput.value = input
+    }
+
+    companion object {
+        private val ACCOUNT_EXPIRY_TIMEOUT = 3.seconds
     }
 }
 

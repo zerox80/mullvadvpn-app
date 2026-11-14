@@ -53,6 +53,10 @@ export class SelectLocationRouteObjectModel {
     }
   }
 
+  getClearSearchButton() {
+    return this.selectors.clearSearchButton();
+  }
+
   getEntryInput() {
     return this.selectors.entryInput();
   }
@@ -132,6 +136,18 @@ export class SelectLocationRouteObjectModel {
     return this.selectors.deleteCustomListButton();
   }
 
+  getAutomaticLocationWarningDialogContinueButton() {
+    return this.selectors.automaticLocationWarningDialogContinueButton();
+  }
+
+  getHeaderMenuItem(label: string) {
+    return this.selectors.headerMenuItem(label);
+  }
+
+  getEntryFiltersOverrideDialogButton(label: string) {
+    return this.selectors.entryFiltersOverrideDialogButton(label);
+  }
+
   async gotoEntryFilter() {
     await this.selectors.filterEntryButton().click();
     await this.utils.expectRoute(RoutePath.filter);
@@ -145,5 +161,9 @@ export class SelectLocationRouteObjectModel {
   async gotoExitFilter() {
     await this.selectors.filterExitButton().click();
     await this.utils.expectRoute(RoutePath.filter);
+  }
+
+  async openHeaderMenu() {
+    await this.selectors.headerMenu().click();
   }
 }
